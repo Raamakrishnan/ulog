@@ -78,7 +78,7 @@ pub mod parser {
         Ok((i, id))
     }
 
-    fn parse_log_line(i: &str) -> nom::IResult<&str, Log> {
+    pub fn parse_log_line(i: &str) -> nom::IResult<&str, Log> {
         let (i, severity) = parse_log_severity(i)?;
         let (i, _) = nom::character::complete::space1(i)?;
         let (i, (file, line)) = parse_file_line(i)?;
