@@ -1,14 +1,11 @@
-use std::path::PathBuf;
 use nom::branch::alt;
-use nom::{bytes::complete::tag, bytes::complete::is_not, combinator::value};
 use nom::sequence::tuple;
+use nom::{bytes::complete::is_not, bytes::complete::tag, combinator::value};
+use std::path::PathBuf;
+use std::fmt;
 
 /// Type-erased errors
-pub type BoxError = std::boxed::Box<dyn
-    std::error::Error
-    + std::marker::Send
-    + std::marker::Sync
->;
+pub type BoxError = std::boxed::Box<dyn std::error::Error + std::marker::Send + std::marker::Sync>;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum LogSeverity {
@@ -27,7 +24,18 @@ impl std::str::FromStr for LogSeverity {
             "UVM_WARNING" => Ok(LogSeverity::WARNING),
             "UVM_ERROR" => Ok(LogSeverity::ERROR),
             "UVM_FATAL" => Ok(LogSeverity::FATAL),
-            _ => Err(format!("'{}' is not a valid severity", s))
+            _ => Err(format!("'{}' is not a valid severity", s)),
+        }
+    }
+}
+
+impl fmt::Display for LogSeverity {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            LogSeverity::INFO => write!(f, "UVM_INFO"),
+            LogSeverity::WARNING => write!(f, "UVM_WARNING"),
+            LogSeverity::ERROR => write!(f, "UVM_ERROR"),
+            LogSeverity::FATAL => write!(f, "UVM_FATAL"),
         }
     }
 }
@@ -41,6 +49,16 @@ pub struct Log {
     component: String,
     id: String,
     message: String,
+}
+
+impl fmt::Display for Log {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{} {}({}) @ {}: {} [{}] {}",
+            self.severity, self.file.to_string_lossy(), self.line, self.time, self.component, self.id, self.message
+        )
+    }
 }
 
 pub mod parser {
@@ -70,7 +88,7 @@ pub mod parser {
     }
 
     fn parse_id(i: &str) -> nom::IResult<&str, &str> {
-        let(i , (_, id, _)) = tuple((
+        let (i, (_, id, _)) = tuple((
             nom::character::complete::char('['),
             nom::bytes::complete::take_until("]"),
             nom::character::complete::char(']'),
@@ -92,15 +110,18 @@ pub mod parser {
         let (i, _) = nom::character::complete::space1(i)?;
         let (i, id) = parse_id(i)?;
         let (i, _) = nom::character::complete::space1(i)?;
-        Ok(("", Log {
-            file: file,
-            line: line,
-            id: id.to_string(),
-            component: comp.to_string(),
-            time: time.parse::<u64>().unwrap(),
-            severity: severity,
-            message: i.to_string()
-        }))
+        Ok((
+            "",
+            Log {
+                file: file,
+                line: line,
+                id: id.to_string(),
+                component: comp.to_string(),
+                time: time.parse::<u64>().unwrap(),
+                severity: severity,
+                message: i.to_string(),
+            },
+        ))
     }
 
     #[cfg(test)]
@@ -109,15 +130,30 @@ pub mod parser {
 
         #[test]
         fn test_parse_log_severity() {
-            assert_eq!(parse_log_severity("UVM_INFO asacs"), Ok((" asacs", LogSeverity::INFO)));
-            assert_eq!(parse_log_severity("UVM_WARNING 312"), Ok((" 312", LogSeverity::WARNING)));
-            assert_eq!(parse_log_severity("UVM_ERROR @ ("), Ok((" @ (", LogSeverity::ERROR)));
-            assert_eq!(parse_log_severity("UVM_FATAL /1.1"), Ok((" /1.1", LogSeverity::FATAL)));
+            assert_eq!(
+                parse_log_severity("UVM_INFO asacs"),
+                Ok((" asacs", LogSeverity::INFO))
+            );
+            assert_eq!(
+                parse_log_severity("UVM_WARNING 312"),
+                Ok((" 312", LogSeverity::WARNING))
+            );
+            assert_eq!(
+                parse_log_severity("UVM_ERROR @ ("),
+                Ok((" @ (", LogSeverity::ERROR))
+            );
+            assert_eq!(
+                parse_log_severity("UVM_FATAL /1.1"),
+                Ok((" /1.1", LogSeverity::FATAL))
+            );
         }
 
         #[test]
         fn test_parse_file_line() {
-            assert_eq!(parse_file_line("sample/sample.sv(98) 4245"), Ok((" 4245", (PathBuf::from("sample/sample.sv"), 98))));
+            assert_eq!(
+                parse_file_line("sample/sample.sv(98) 4245"),
+                Ok((" 4245", (PathBuf::from("sample/sample.sv"), 98)))
+            );
         }
 
         #[test]
@@ -135,11 +171,9 @@ pub mod parser {
                 line: 46,
                 message: "GREEN BUBBLE_GUM 7".to_string(),
                 severity: LogSeverity::FATAL,
-                time: 25
+                time: 25,
             };
             assert_eq!(parse_log_line("UVM_FATAL /home/runner/env.svh(46) @ 25: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 7"), Ok(("", log)));
         }
-
     }
-
 }

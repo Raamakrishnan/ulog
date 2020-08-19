@@ -8,7 +8,7 @@ fn main() {
         let log = log::parser::parse_log_line(&l);
         match log {
             Ok((_, log2)) => {
-                println!("{:?}", log2);
+                println!("{}", log2);
             },
             Err(e) => println!("parsing error {:?}", e.to_string())
         };
