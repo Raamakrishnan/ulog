@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum LogSeverity {
@@ -50,11 +50,16 @@ impl fmt::Display for LogLine {
         write!(
             f,
             "{} {}({}) @ {}: {} [{}] {}",
-            self.severity, self.file.to_string_lossy(), self.line, self.time, self.component, self.id, self.message
+            self.severity,
+            self.file.to_string_lossy(),
+            self.line,
+            self.time,
+            self.component,
+            self.id,
+            self.message
         )
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct Log {
@@ -63,9 +68,7 @@ pub struct Log {
 
 impl Log {
     pub fn new() -> Log {
-        Log {
-            logs: Vec::new()
-        }
+        Log { logs: Vec::new() }
     }
 
     pub fn push(&mut self, line: LogLine) {
@@ -81,3 +84,13 @@ impl IntoIterator for Log {
         self.logs.into_iter()
     }
 }
+
+// impl fmt::Display for Log {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(
+//             f,
+//             "{} {}({}) @ {}: {} [{}] {}",
+//             self.severity, self.file.to_string_lossy(), self.line, self.time, self.component, self.id, self.message
+//         )
+//     }
+// }
