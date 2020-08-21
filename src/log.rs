@@ -54,3 +54,30 @@ impl fmt::Display for LogLine {
         )
     }
 }
+
+
+#[derive(Debug, Clone)]
+pub struct Log {
+    logs: Vec<LogLine>,
+}
+
+impl Log {
+    pub fn new() -> Log {
+        Log {
+            logs: Vec::new()
+        }
+    }
+
+    pub fn push(&mut self, line: LogLine) {
+        self.logs.push(line);
+    }
+}
+
+impl IntoIterator for Log {
+    type Item = LogLine;
+    type IntoIter = std::vec::IntoIter<LogLine>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.logs.into_iter()
+    }
+}
