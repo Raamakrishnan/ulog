@@ -1,5 +1,5 @@
 [package]
-name = "log"
+name = "uvm_log"
 version = "0.1.0"
 authors = ["Raamakrishnan <raamakrishnan1997@gmail.com>"]
 edition = "2018"
@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 nom = "5"
+ncurses = "5"
