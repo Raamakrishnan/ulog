@@ -17,8 +17,12 @@ pub fn parse_file(path : impl AsRef<Path>) -> Log {
 
     for line in buf_reader.lines() {
         let l = line.expect("line failed");
-        let (_, log_line) = parser::parse_log_line(&l).unwrap();
-        log.push(log_line);
+        let log_result = parser::parse_log_line(&l);
+        match log_result {
+            Ok((_, log_line)) => log.push(log_line),
+            // Ignore parsing errors
+            Err(_) => (),
+        }
     }
 
     return log;
