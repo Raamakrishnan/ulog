@@ -1,6 +1,6 @@
 pub mod log;
 pub mod parser;
-pub mod tui;
+// pub mod tui;
 use std::path::Path;
 use std::io::BufRead;
 

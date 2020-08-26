@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 nom = "5"
-ncurses = "5"
+clap = "2"
