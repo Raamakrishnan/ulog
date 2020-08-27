@@ -84,13 +84,3 @@ impl IntoIterator for Log {
         self.logs.into_iter()
     }
 }
-
-// impl fmt::Display for Log {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(
-//             f,
-//             "{} {}({}) @ {}: {} [{}] {}",
-//             self.severity, self.file.to_string_lossy(), self.line, self.time, self.component, self.id, self.message
-//         )
-//     }
-// }

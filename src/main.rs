@@ -1,40 +1,57 @@
-use uvm_log::*;
 use clap::{App, Arg};
-
+use uvm_log::*;
 
 fn main() {
     let matches = App::new("uvm_log")
-                        .version("0.1")
-                        .arg(Arg::with_name("LOG")
-                            .help("Log file")
-                            .required(true))
-                        .arg(Arg::with_name("id")
-                            .long("id")
-                            .takes_value(true)
-                            .multiple(true)
-                            .help("filter by id"))
-                        .get_matches();
+        .version("0.1")
+        .arg(Arg::with_name("LOG").help("Log file").required(true))
+        .arg(
+            Arg::with_name("id")
+                .long("id")
+                .takes_value(true)
+                .multiple(true)
+                .help("filter by id"),
+        )
+        .arg(
+            Arg::with_name("severity")
+                .long("severity")
+                .takes_value(true)
+                .multiple(true)
+                .help("Filter by severity (info, warning, error, fatal)"),
+        )
+        .get_matches();
 
     let file = matches.value_of("LOG").unwrap();
 
-    let filtered_ids : Option<Vec<&str>> = matches.values_of("id").map(|id| id.collect());
+    let filtered_ids: Option<Vec<&str>> = matches.values_of("id").map(|id| id.collect());
+    let filtered_severity: Option<Vec<&str>> = matches.values_of("severity").map(|sev| sev.collect());
+
+    let filtered_severity: Option<Vec<log::LogSeverity>> = filtered_severity.map(|vsev| vsev.into_iter().filter_map(|sev| 
+        match sev.to_lowercase().as_ref() {
+            "info" => Some(log::LogSeverity::INFO),
+            "error" => Some(log::LogSeverity::ERROR),
+            "warning" | "warn" => Some(log::LogSeverity::WARNING),
+            "fatal" => Some(log::LogSeverity::FATAL),
+            _ => None,
+        }
+    ).collect());
 
     let log = parse_file(file);
     let lines = log.into_iter();
 
     let filtered_lines = lines.filter(|line|
-        match &filtered_ids {
-            Some(ids) => {
-                return ids.contains(&&line.id[..])
-            },
-            None => {
-                return true
-            },
+        if let Some(ids) = &filtered_ids {
+            return ids.contains(&&line.id[..])
+        }
+        else if let Some(sev) = &filtered_severity {
+            return sev.contains(&&line.severity)
+        }
+        else {
+            return false
         }
     );
 
     for line in filtered_lines {
         println!("{}", line);
     }
-
 }
