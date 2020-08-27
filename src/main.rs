@@ -16,18 +16,25 @@ fn main() {
                         .get_matches();
 
     let file = matches.value_of("LOG").unwrap();
-    let ids = matches.values_of("id");
 
-    if let Some(v_ids) = ids {
-        let v_ids: Vec<&str> = v_ids.collect();
-        let log = parse_file(file);
+    let filtered_ids : Option<Vec<&str>> = matches.values_of("id").map(|id| id.collect());
 
-        let filtered_lines = log.into_iter();
-        let filtered_lines = filtered_lines.into_iter().filter(|y| v_ids.contains(&&y.id[..]));
+    let log = parse_file(file);
+    let lines = log.into_iter();
 
-        for line in filtered_lines {
-            println!("{}", line);
+    let filtered_lines = lines.filter(|line|
+        match &filtered_ids {
+            Some(ids) => {
+                return ids.contains(&&line.id[..])
+            },
+            None => {
+                return true
+            },
         }
+    );
+
+    for line in filtered_lines {
+        println!("{}", line);
     }
 
 }
