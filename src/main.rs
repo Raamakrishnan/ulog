@@ -40,7 +40,10 @@ fn main() {
     let lines = log.into_iter();
 
     let filtered_lines = lines.filter(|line|
-        if let Some(ids) = &filtered_ids {
+        if let (Some(ids), Some(sev)) = (&filtered_ids, &filtered_severity) {
+            return ids.contains(&&line.id[..]) && sev.contains(&&line.severity)
+        }
+        else if let Some(ids) = &filtered_ids {
             return ids.contains(&&line.id[..])
         }
         else if let Some(sev) = &filtered_severity {
