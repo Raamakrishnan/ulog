@@ -28,6 +28,15 @@ fn parse_file_line(i: &str) -> nom::IResult<&str, (PathBuf, u32)> {
     Ok((i, (PathBuf::from(file), line.parse::<u32>().unwrap())))
 }
 
+fn parse_time(i: &str) -> nom::IResult<&str, (u64, &str)> {
+    let (i, (time, unit, _)) = tuple((
+        nom::character::complete::digit1,
+        nom::character::complete::alpha0,
+        nom::character::complete::char(':'),
+    ))(i)?;
+    Ok((i, (time.parse::<u64>().unwrap(), unit)))
+}
+
 fn parse_id(i: &str) -> nom::IResult<&str, &str> {
     let (i, (_, id, _)) = tuple((
         nom::character::complete::char('['),
@@ -44,13 +53,17 @@ pub fn parse_log_line(i: &str) -> nom::IResult<&str, LogLine> {
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, _) = nom::character::complete::char('@')(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
-    let (i, time) = nom::character::complete::digit1(i)?;
-    let (i, _) = nom::character::complete::char(':')(i)?;
+    // let (i, time) = nom::character::complete::digit1(i)?;
+    // let (i, _) = nom::character::complete::char(':')(i)?;
+    let (i, (time, time_unit_str)) = parse_time(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, comp) = not_whitespace(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, id) = parse_id(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
+
+    let time_unit = time_unit_str.parse::<LogTimeUnit>();
+
     Ok((
         "",
         LogLine {
@@ -58,7 +71,8 @@ pub fn parse_log_line(i: &str) -> nom::IResult<&str, LogLine> {
             line: line,
             id: id.to_string(),
             component: comp.to_string(),
-            time: time.parse::<u64>().unwrap(),
+            time: time,
+            time_unit: time_unit.ok(),
             severity: severity,
             message: i.to_string(),
         },
@@ -113,6 +127,7 @@ mod tests {
             message: "GREEN BUBBLE_GUM 7".to_string(),
             severity: LogSeverity::FATAL,
             time: 25,
+            time_unit: None,
         };
         assert_eq!(parse_log_line("UVM_FATAL /home/runner/env.svh(46) @ 25: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 7"), Ok(("", log)));
     }

@@ -15,13 +15,13 @@ pub fn parse_file(path : impl AsRef<Path>) -> Log {
 
     let mut log = Log::new();
 
-    for line in buf_reader.lines() {
+    for (i, line) in buf_reader.lines().enumerate() {
         let l = line.expect("line failed");
         let log_result = parser::parse_log_line(&l);
         match log_result {
             Ok((_, log_line)) => log.push(log_line),
             // Ignore parsing errors
-            Err(_) => (),
+            Err(e) => println!("line {} ignored due to error: {}", i, e.to_string()),
         }
     }
 
