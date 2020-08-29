@@ -2,40 +2,40 @@ use std::fmt;
 use std::path::PathBuf;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum LogSeverity {
+pub enum Severity {
     INFO,
     WARNING,
     ERROR,
     FATAL,
 }
 
-impl std::str::FromStr for LogSeverity {
+impl std::str::FromStr for Severity {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "UVM_INFO" | "info" => Ok(LogSeverity::INFO),
-            "UVM_WARNING" | "warn" => Ok(LogSeverity::WARNING),
-            "UVM_ERROR" | "error" => Ok(LogSeverity::ERROR),
-            "UVM_FATAL" | "fatal" => Ok(LogSeverity::FATAL),
+            "UVM_INFO" | "info" => Ok(Severity::INFO),
+            "UVM_WARNING" | "warn" | "warning" => Ok(Severity::WARNING),
+            "UVM_ERROR" | "error" => Ok(Severity::ERROR),
+            "UVM_FATAL" | "fatal" => Ok(Severity::FATAL),
             _ => Err(format!("'{}' is not a valid severity", s)),
         }
     }
 }
 
-impl fmt::Display for LogSeverity {
+impl fmt::Display for Severity {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            LogSeverity::INFO => write!(f, "UVM_INFO"),
-            LogSeverity::WARNING => write!(f, "UVM_WARNING"),
-            LogSeverity::ERROR => write!(f, "UVM_ERROR"),
-            LogSeverity::FATAL => write!(f, "UVM_FATAL"),
+            Severity::INFO => write!(f, "UVM_INFO"),
+            Severity::WARNING => write!(f, "UVM_WARNING"),
+            Severity::ERROR => write!(f, "UVM_ERROR"),
+            Severity::FATAL => write!(f, "UVM_FATAL"),
         }
     }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum LogTimeUnit {
+pub enum TimeUnit {
     Second,
     Millisecond,
     Microsecond,
@@ -44,48 +44,48 @@ pub enum LogTimeUnit {
     Femtosecond,
 }
 
-impl std::str::FromStr for LogTimeUnit {
+impl std::str::FromStr for TimeUnit {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "s" => Ok(LogTimeUnit::Second),
-            "ms" => Ok(LogTimeUnit::Millisecond),
-            "us" => Ok(LogTimeUnit::Microsecond),
-            "ns" => Ok(LogTimeUnit::Nanosecond),
-            "ps" => Ok(LogTimeUnit::Picosecond),
-            "fs" => Ok(LogTimeUnit::Femtosecond),
+            "s" => Ok(TimeUnit::Second),
+            "ms" => Ok(TimeUnit::Millisecond),
+            "us" => Ok(TimeUnit::Microsecond),
+            "ns" => Ok(TimeUnit::Nanosecond),
+            "ps" => Ok(TimeUnit::Picosecond),
+            "fs" => Ok(TimeUnit::Femtosecond),
             _ => Err(format!("'{}' is not a valid severity", s)),
         }
     }
 }
 
-impl fmt::Display for LogTimeUnit {
+impl fmt::Display for TimeUnit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            LogTimeUnit::Second => write!(f, "s"),
-            LogTimeUnit::Millisecond => write!(f, "ms"),
-            LogTimeUnit::Microsecond => write!(f, "us"),
-            LogTimeUnit::Nanosecond => write!(f, "ns"),
-            LogTimeUnit::Picosecond => write!(f, "ps"),
-            LogTimeUnit::Femtosecond => write!(f, "fs"),
+            TimeUnit::Second => write!(f, "s"),
+            TimeUnit::Millisecond => write!(f, "ms"),
+            TimeUnit::Microsecond => write!(f, "us"),
+            TimeUnit::Nanosecond => write!(f, "ns"),
+            TimeUnit::Picosecond => write!(f, "ps"),
+            TimeUnit::Femtosecond => write!(f, "fs"),
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct LogLine {
-    pub severity: LogSeverity,
+pub struct Line {
+    pub severity: Severity,
     pub file: PathBuf,
     pub line: u32,
     pub time: u64,
-    pub time_unit: Option<LogTimeUnit>,
+    pub time_unit: Option<TimeUnit>,
     pub component: String,
     pub id: String,
     pub message: String,
 }
 
-impl fmt::Display for LogLine {
+impl fmt::Display for Line {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.time_unit {
             Some(unit) => write!(
@@ -117,7 +117,7 @@ impl fmt::Display for LogLine {
 
 #[derive(Debug, Clone)]
 pub struct Log {
-    logs: Vec<LogLine>,
+    logs: Vec<Line>,
 }
 
 impl Log {
@@ -125,14 +125,14 @@ impl Log {
         Log { logs: Vec::new() }
     }
 
-    pub fn push(&mut self, line: LogLine) {
+    pub fn push(&mut self, line: Line) {
         self.logs.push(line);
     }
 }
 
 impl IntoIterator for Log {
-    type Item = LogLine;
-    type IntoIter = std::vec::IntoIter<LogLine>;
+    type Item = Line;
+    type IntoIter = std::vec::IntoIter<Line>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.logs.into_iter()

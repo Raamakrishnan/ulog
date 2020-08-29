@@ -26,12 +26,12 @@ fn main() {
     let filtered_ids: Option<Vec<&str>> = matches.values_of("id").map(|id| id.collect());
     let filtered_severity: Option<Vec<&str>> = matches.values_of("severity").map(|sev| sev.collect());
 
-    let filtered_severity: Option<Vec<log::LogSeverity>> = filtered_severity.map(|vsev| vsev.into_iter().filter_map(|sev| 
+    let filtered_severity: Option<Vec<log::Severity>> = filtered_severity.map(|vsev| vsev.into_iter().filter_map(|sev| 
         match sev.to_lowercase().as_ref() {
-            "info" => Some(log::LogSeverity::INFO),
-            "error" => Some(log::LogSeverity::ERROR),
-            "warning" | "warn" => Some(log::LogSeverity::WARNING),
-            "fatal" => Some(log::LogSeverity::FATAL),
+            "info" => Some(log::Severity::INFO),
+            "error" => Some(log::Severity::ERROR),
+            "warning" | "warn" => Some(log::Severity::WARNING),
+            "fatal" => Some(log::Severity::FATAL),
             _ => None,
         }
     ).collect());

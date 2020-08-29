@@ -9,12 +9,12 @@ fn not_whitespace(i: &str) -> nom::IResult<&str, &str> {
     is_not(" \t")(i)
 }
 
-fn parse_log_severity(i: &str) -> nom::IResult<&str, LogSeverity> {
+fn parse_log_severity(i: &str) -> nom::IResult<&str, Severity> {
     alt((
-        value(LogSeverity::INFO, tag("UVM_INFO")),
-        value(LogSeverity::WARNING, tag("UVM_WARNING")),
-        value(LogSeverity::ERROR, tag("UVM_ERROR")),
-        value(LogSeverity::FATAL, tag("UVM_FATAL")),
+        value(Severity::INFO, tag("UVM_INFO")),
+        value(Severity::WARNING, tag("UVM_WARNING")),
+        value(Severity::ERROR, tag("UVM_ERROR")),
+        value(Severity::FATAL, tag("UVM_FATAL")),
     ))(i)
 }
 
@@ -46,7 +46,7 @@ fn parse_id(i: &str) -> nom::IResult<&str, &str> {
     Ok((i, id))
 }
 
-pub fn parse_log_line(i: &str) -> nom::IResult<&str, LogLine> {
+pub fn parse_log_line(i: &str) -> nom::IResult<&str, Line> {
     let (i, severity) = parse_log_severity(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, (file, line)) = parse_file_line(i)?;
@@ -62,11 +62,11 @@ pub fn parse_log_line(i: &str) -> nom::IResult<&str, LogLine> {
     let (i, id) = parse_id(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
 
-    let time_unit = time_unit_str.parse::<LogTimeUnit>();
+    let time_unit = time_unit_str.parse::<TimeUnit>();
 
     Ok((
         "",
-        LogLine {
+        Line {
             file: file,
             line: line,
             id: id.to_string(),
@@ -87,19 +87,19 @@ mod tests {
     fn test_parse_log_severity() {
         assert_eq!(
             parse_log_severity("UVM_INFO asacs"),
-            Ok((" asacs", LogSeverity::INFO))
+            Ok((" asacs", Severity::INFO))
         );
         assert_eq!(
             parse_log_severity("UVM_WARNING 312"),
-            Ok((" 312", LogSeverity::WARNING))
+            Ok((" 312", Severity::WARNING))
         );
         assert_eq!(
             parse_log_severity("UVM_ERROR @ ("),
-            Ok((" @ (", LogSeverity::ERROR))
+            Ok((" @ (", Severity::ERROR))
         );
         assert_eq!(
             parse_log_severity("UVM_FATAL /1.1"),
-            Ok((" /1.1", LogSeverity::FATAL))
+            Ok((" /1.1", Severity::FATAL))
         );
     }
 
@@ -119,13 +119,13 @@ mod tests {
 
     #[test]
     fn test_parse_line() {
-        let log = LogLine {
+        let log = Line {
             id: "id1".to_string(),
             component: "uvm_test_top.jb_env.jb_fc".to_string(),
             file: PathBuf::from("/home/runner/env.svh"),
             line: 46,
             message: "GREEN BUBBLE_GUM 7".to_string(),
-            severity: LogSeverity::FATAL,
+            severity: Severity::FATAL,
             time: 25,
             time_unit: None,
         };
