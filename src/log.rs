@@ -14,10 +14,10 @@ impl std::str::FromStr for Severity {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "UVM_INFO" | "info" => Ok(Severity::INFO),
-            "UVM_WARNING" | "warn" | "warning" => Ok(Severity::WARNING),
-            "UVM_ERROR" | "error" => Ok(Severity::ERROR),
-            "UVM_FATAL" | "fatal" => Ok(Severity::FATAL),
+            "UVM_INFO" | "INFO" | "info" => Ok(Severity::INFO),
+            "UVM_WARNING" | "WARNING" | "WARN" | "warn" | "warning" => Ok(Severity::WARNING),
+            "UVM_ERROR" | "ERROR" | "error" => Ok(Severity::ERROR),
+            "UVM_FATAL" | "FATAL" | "fatal" => Ok(Severity::FATAL),
             _ => Err(format!("'{}' is not a valid severity", s)),
         }
     }

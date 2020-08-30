@@ -24,35 +24,29 @@ fn main() {
     let file = matches.value_of("LOG").unwrap();
 
     let filtered_ids: Option<Vec<&str>> = matches.values_of("id").map(|id| id.collect());
-    let filtered_severity: Option<Vec<&str>> = matches.values_of("severity").map(|sev| sev.collect());
+    let filtered_severity: Option<Vec<&str>> =
+        matches.values_of("severity").map(|sev| sev.collect());
 
-    let filtered_severity: Option<Vec<log::Severity>> = filtered_severity.map(|vsev| vsev.into_iter().filter_map(|sev| 
-        match sev.to_lowercase().as_ref() {
-            "info" => Some(log::Severity::INFO),
-            "error" => Some(log::Severity::ERROR),
-            "warning" | "warn" => Some(log::Severity::WARNING),
-            "fatal" => Some(log::Severity::FATAL),
-            _ => None,
-        }
-    ).collect());
+    let filtered_severity: Option<Vec<log::Severity>> = filtered_severity.map(|vsev| {
+        vsev.into_iter()
+            .filter_map(|sev| sev.parse::<log::Severity>().ok())
+            .collect()
+    });
 
     let log = parse_file(file);
     let lines = log.into_iter();
 
-    let filtered_lines = lines.filter(|line|
+    let filtered_lines = lines.filter(|line| {
         if let (Some(ids), Some(sev)) = (&filtered_ids, &filtered_severity) {
-            return ids.contains(&&line.id[..]) && sev.contains(&&line.severity)
+            return ids.contains(&&line.id[..]) && sev.contains(&&line.severity);
+        } else if let Some(ids) = &filtered_ids {
+            return ids.contains(&&line.id[..]);
+        } else if let Some(sev) = &filtered_severity {
+            return sev.contains(&&line.severity);
+        } else {
+            return false;
         }
-        else if let Some(ids) = &filtered_ids {
-            return ids.contains(&&line.id[..])
-        }
-        else if let Some(sev) = &filtered_severity {
-            return sev.contains(&&line.severity)
-        }
-        else {
-            return false
-        }
-    );
+    });
 
     for line in filtered_lines {
         println!("{}", line);
