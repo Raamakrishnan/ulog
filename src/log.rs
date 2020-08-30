@@ -55,7 +55,7 @@ impl std::str::FromStr for TimeUnit {
             "ns" => Ok(TimeUnit::Nanosecond),
             "ps" => Ok(TimeUnit::Picosecond),
             "fs" => Ok(TimeUnit::Femtosecond),
-            _ => Err(format!("'{}' is not a valid severity", s)),
+            _ => Err(format!("'{}' is not a valid time unit", s)),
         }
     }
 }

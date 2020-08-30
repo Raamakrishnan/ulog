@@ -1,40 +1,38 @@
 use nom::branch::alt;
 use nom::sequence::tuple;
-use nom::{bytes::complete::is_not, bytes::complete::tag, combinator::value};
-use std::path::PathBuf;
+use nom::{bytes::complete::is_not, bytes::complete::tag};
 
-use super::log::*;
 
 fn not_whitespace(i: &str) -> nom::IResult<&str, &str> {
     is_not(" \t")(i)
 }
 
-fn parse_log_severity(i: &str) -> nom::IResult<&str, Severity> {
+fn parse_log_severity(i: &str) -> nom::IResult<&str, &str> {
     alt((
-        value(Severity::INFO, tag("UVM_INFO")),
-        value(Severity::WARNING, tag("UVM_WARNING")),
-        value(Severity::ERROR, tag("UVM_ERROR")),
-        value(Severity::FATAL, tag("UVM_FATAL")),
+        tag("UVM_INFO"),
+        tag("UVM_WARNING"),
+        tag("UVM_ERROR"),
+        tag("UVM_FATAL"),
     ))(i)
 }
 
-fn parse_file_line(i: &str) -> nom::IResult<&str, (PathBuf, u32)> {
+fn parse_file_line(i: &str) -> nom::IResult<&str, (&str, &str)> {
     let (i, (file, _, line, _)) = tuple((
         is_not("("),
         nom::character::complete::char('('),
         nom::character::complete::digit1,
         nom::character::complete::char(')'),
     ))(i)?;
-    Ok((i, (PathBuf::from(file), line.parse::<u32>().unwrap())))
+    Ok((i, (file, line)))
 }
 
-fn parse_time(i: &str) -> nom::IResult<&str, (u64, &str)> {
+fn parse_time(i: &str) -> nom::IResult<&str, (&str, &str)> {
     let (i, (time, unit, _)) = tuple((
         nom::character::complete::digit1,
         nom::character::complete::alpha0,
         nom::character::complete::char(':'),
     ))(i)?;
-    Ok((i, (time.parse::<u64>().unwrap(), unit)))
+    Ok((i, (time, unit)))
 }
 
 fn parse_id(i: &str) -> nom::IResult<&str, &str> {
@@ -46,15 +44,13 @@ fn parse_id(i: &str) -> nom::IResult<&str, &str> {
     Ok((i, id))
 }
 
-pub fn parse_log_line(i: &str) -> nom::IResult<&str, Line> {
+pub fn parse_log_line(i: &str) -> nom::IResult<&str, (&str, &str, &str, &str, &str, &str, &str, &str)> {
     let (i, severity) = parse_log_severity(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, (file, line)) = parse_file_line(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, _) = nom::character::complete::char('@')(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
-    // let (i, time) = nom::character::complete::digit1(i)?;
-    // let (i, _) = nom::character::complete::char(':')(i)?;
     let (i, (time, time_unit_str)) = parse_time(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, comp) = not_whitespace(i)?;
@@ -62,21 +58,7 @@ pub fn parse_log_line(i: &str) -> nom::IResult<&str, Line> {
     let (i, id) = parse_id(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
 
-    let time_unit = time_unit_str.parse::<TimeUnit>();
-
-    Ok((
-        "",
-        Line {
-            file: file,
-            line: line,
-            id: id.to_string(),
-            component: comp.to_string(),
-            time: time,
-            time_unit: time_unit.ok(),
-            severity: severity,
-            message: i.to_string(),
-        },
-    ))
+    Ok(("", (severity, file, line, time, time_unit_str, comp, id, i)))
 }
 
 #[cfg(test)]
@@ -87,19 +69,19 @@ mod tests {
     fn test_parse_log_severity() {
         assert_eq!(
             parse_log_severity("UVM_INFO asacs"),
-            Ok((" asacs", Severity::INFO))
+            Ok((" asacs", "UVM_INFO"))
         );
         assert_eq!(
             parse_log_severity("UVM_WARNING 312"),
-            Ok((" 312", Severity::WARNING))
+            Ok((" 312", "UVM_WARNING"))
         );
         assert_eq!(
             parse_log_severity("UVM_ERROR @ ("),
-            Ok((" @ (", Severity::ERROR))
+            Ok((" @ (", "UVM_ERROR"))
         );
         assert_eq!(
             parse_log_severity("UVM_FATAL /1.1"),
-            Ok((" /1.1", Severity::FATAL))
+            Ok((" /1.1", "UVM_FATAL"))
         );
     }
 
@@ -107,7 +89,7 @@ mod tests {
     fn test_parse_file_line() {
         assert_eq!(
             parse_file_line("sample/sample.sv(98) 4245"),
-            Ok((" 4245", (PathBuf::from("sample/sample.sv"), 98)))
+            Ok((" 4245", ("sample/sample.sv", "98")))
         );
     }
 
@@ -118,17 +100,33 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_time() {
+        assert_eq!(parse_time("12345ns: adce"), Ok(("adce", ("12345", "ns"))));
+    }
+
+    #[test]
     fn test_parse_line() {
-        let log = Line {
-            id: "id1".to_string(),
-            component: "uvm_test_top.jb_env.jb_fc".to_string(),
-            file: PathBuf::from("/home/runner/env.svh"),
-            line: 46,
-            message: "GREEN BUBBLE_GUM 7".to_string(),
-            severity: Severity::FATAL,
-            time: 25,
-            time_unit: None,
-        };
-        assert_eq!(parse_log_line("UVM_FATAL /home/runner/env.svh(46) @ 25: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 7"), Ok(("", log)));
+        let log1 = (
+            "UVM_FATAL",
+            "/home/runner/env.svh",
+            "46",
+            "25",
+            "",
+            "uvm_test_top.jb_env.jb_fc",
+            "id1",
+            "GREEN BUBBLE_GUM 7"
+        );
+        let log2 = (
+            "UVM_FATAL",
+            "/home/runner/env.svh",
+            "46",
+            "25",
+            "ns",
+            "uvm_test_top.jb_env.jb_fc",
+            "id1",
+            "GREEN BUBBLE_GUM 7"
+        );
+        assert_eq!(parse_log_line("UVM_FATAL /home/runner/env.svh(46) @ 25: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 7"), Ok(("", log1)));
+        assert_eq!(parse_log_line("UVM_FATAL /home/runner/env.svh(46) @ 25ns: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 7"), Ok(("", log2)));
     }
 }

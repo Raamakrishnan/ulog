@@ -5,7 +5,7 @@ UVM_ERROR /home/runner/env.svh(45) @ 25s: uvm_test_top.jb_env.jb_fc [id2] GREEN 
 UVM_FATAL /home/runner/env.svh(46) @ 25ns: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 7
 UVM_FATAL /home/runner/env.svh(47) @ 25us: uvm_test_top.jb_env.jb_fc [id2] GREEN BUBBLE_GUM 8
 UVM_WARNING /home/runner/env.svh(42) @ 25ms: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 3
-UVM_WARNING /home/runner/env.svh(43) @ 25: uvm_test_top.jb_env.jb_fc [id2] GREEN BUBBLE_GUM 4
+UVM_WARNING /home/runner/env.svh(43) @ 25abc: uvm_test_top.jb_env.jb_fc [id2] GREEN BUBBLE_GUM 4
 UVM_INFO /playground_lib/uvm-1.2/src/base/uvm_root.svh(392) @ 0: reporter [UVM/RELNOTES] 
 UVM_INFO testbench.sv(7) @ 1060: reporter [TAG] This is the real message content
 UVM_INFO testbench.sv(12) @ 3890: reporter [tb_top] var=0x6
