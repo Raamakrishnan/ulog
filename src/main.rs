@@ -1,8 +1,8 @@
 use clap::{App, Arg};
-use uvm_log::*;
+use ulog::*;
 
 fn main() {
-    let matches = App::new("uvm_log")
+    let matches = App::new("ulog")
         .version("0.1")
         .arg(Arg::with_name("LOG").help("Log file").required(true))
         .arg(

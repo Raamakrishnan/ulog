@@ -1,5 +1,5 @@
 [package]
-name = "uvm_log"
+name = "ulog"
 version = "0.1.0"
 authors = ["Raamakrishnan <raamakrishnan1997@gmail.com>"]
 edition = "2018"

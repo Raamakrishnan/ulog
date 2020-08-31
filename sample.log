@@ -1,4 +1,4 @@
-UVM_INFO /home/runner/env.svh(40) @ 25ns: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 1
+UVM_INFO /home/runner/env.svh(40) @ 25.00ns: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 1
 UVM_INFO /home/runner/env.svh(41) @ 25fs: uvm_test_top.jb_env.jb_fc [id2] GREEN BUBBLE_GUM 2
 UVM_ERROR /home/runner/env.svh(44) @ 25ps: uvm_test_top.jb_env.jb_fc [id1] GREEN BUBBLE_GUM 5
 UVM_ERROR /home/runner/env.svh(45) @ 25s: uvm_test_top.jb_env.jb_fc [id2] GREEN BUBBLE_GUM 6
