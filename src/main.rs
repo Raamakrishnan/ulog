@@ -33,22 +33,5 @@ fn main() {
             .collect()
     });
 
-    let log = parse_file(file);
-    let lines = log.into_iter();
-
-    let filtered_lines = lines.filter(|line| {
-        if let (Some(ids), Some(sev)) = (&filtered_ids, &filtered_severity) {
-            return ids.contains(&&line.id[..]) && sev.contains(&&line.severity);
-        } else if let Some(ids) = &filtered_ids {
-            return ids.contains(&&line.id[..]);
-        } else if let Some(sev) = &filtered_severity {
-            return sev.contains(&&line.severity);
-        } else {
-            return false;
-        }
-    });
-
-    for line in filtered_lines {
-        println!("{}", line);
-    }
+    parse_filter_file(file, &filtered_ids, &filtered_severity);
 }

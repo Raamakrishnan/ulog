@@ -36,11 +36,23 @@ pub fn construct_log_line(severity_str : &str, file_str: &str, line_str: &str, t
     })
 }
 
-pub fn parse_file(path : impl AsRef<Path>) -> Log {
+fn filter(line: log::Line,ids: &Option<Vec<&str>>, sevs: &Option<Vec<log::Severity>>) -> bool {
+    if let (Some(ids), Some(sevs)) = (&ids, &sevs) {
+        return ids.contains(&&line.id[..]) && sevs.contains(&&line.severity);
+    } else if let Some(ids) = &ids {
+        return ids.contains(&&line.id[..]);
+    } else if let Some(sevs) = &sevs {
+        return sevs.contains(&&line.severity);
+    } else {
+        return false;
+    }
+}
+
+pub fn parse_filter_file(path: impl AsRef<Path>, ids: &Option<Vec<&str>>, sevs: &Option<Vec<log::Severity>>) {
     let file = std::fs::File::open(path).expect("file open failed");
     let buf_reader = std::io::BufReader::new(file);
 
-    let mut log = Log::new();
+    // let mut log = Log::new();
 
     for (i, line) in buf_reader.lines().enumerate() {
         let l = line.expect("line failed");
@@ -54,11 +66,14 @@ pub fn parse_file(path : impl AsRef<Path>) -> Log {
                         continue;
                     },
                 };
-                log.push(log_line)
+
+                if filter(log_line, ids, sevs) {
+                    println!("{}", l);
+                }
+
             },// Ignore parsing errors
             Err(e) => println!("line {} ignored due to error: {}", i, e.to_string()),
         }
     }
 
-    return log;
 }
