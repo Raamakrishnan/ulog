@@ -26,13 +26,12 @@ fn parse_file_line(i: &str) -> nom::IResult<&str, (&str, &str)> {
     Ok((i, (file, line)))
 }
 
-fn parse_time(i: &str) -> nom::IResult<&str, (&str, &str)> {
-    let (i, (time, unit, _)) = tuple((
-        nom::character::complete::digit1,
-        nom::character::complete::alpha0,
+fn parse_time(i: &str) -> nom::IResult<&str, &str> {
+    let (i, (time, _)) = tuple((
+        nom::bytes::complete::take_until(":"),
         nom::character::complete::char(':'),
     ))(i)?;
-    Ok((i, (time, unit)))
+    Ok((i, time))
 }
 
 fn parse_id(i: &str) -> nom::IResult<&str, &str> {
@@ -44,21 +43,21 @@ fn parse_id(i: &str) -> nom::IResult<&str, &str> {
     Ok((i, id))
 }
 
-pub fn parse_log_line(i: &str) -> nom::IResult<&str, (&str, &str, &str, &str, &str, &str, &str, &str)> {
+pub fn parse_log_line(i: &str) -> nom::IResult<&str, (&str, &str, &str, &str, &str, &str)> {
     let (i, severity) = parse_log_severity(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, (file, line)) = parse_file_line(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, _) = nom::character::complete::char('@')(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
-    let (i, (time, time_unit_str)) = parse_time(i)?;
+    let (i, _) = parse_time(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, comp) = not_whitespace(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
     let (i, id) = parse_id(i)?;
     let (i, _) = nom::character::complete::space1(i)?;
 
-    Ok(("", (severity, file, line, time, time_unit_str, comp, id, i)))
+    Ok(("", (severity, file, line, comp, id, i)))
 }
 
 #[cfg(test)]
@@ -101,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_parse_time() {
-        assert_eq!(parse_time("12345ns: adce"), Ok(("adce", ("12345", "ns"))));
+        assert_eq!(parse_time("12345ns: adce"), Ok((" adce", "12345ns")));
     }
 
     #[test]
@@ -110,8 +109,8 @@ mod tests {
             "UVM_FATAL",
             "/home/runner/env.svh",
             "46",
-            "25",
-            "",
+            // "25",
+            // "",
             "uvm_test_top.jb_env.jb_fc",
             "id1",
             "GREEN BUBBLE_GUM 7"
@@ -120,8 +119,8 @@ mod tests {
             "UVM_FATAL",
             "/home/runner/env.svh",
             "46",
-            "25",
-            "ns",
+            // "25",
+            // "ns",
             "uvm_test_top.jb_env.jb_fc",
             "id1",
             "GREEN BUBBLE_GUM 7"

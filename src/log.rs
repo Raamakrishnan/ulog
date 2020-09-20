@@ -78,42 +78,42 @@ pub struct Line {
     pub severity: Severity,
     pub file: PathBuf,
     pub line: u32,
-    pub time: u64,
-    pub time_unit: Option<TimeUnit>,
+    // pub time: u64,
+    // pub time_unit: Option<TimeUnit>,
     pub component: String,
     pub id: String,
     pub message: String,
 }
 
-impl fmt::Display for Line {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self.time_unit {
-            Some(unit) => write!(
-                f,
-                "{} {}({}) @ {}{}: {} [{}] {}",
-                self.severity,
-                self.file.to_string_lossy(),
-                self.line,
-                self.time,
-                unit.to_string(),
-                self.component,
-                self.id,
-                self.message
-            ),
-            None => write!(
-                f,
-                "{} {}({}) @ {}: {} [{}] {}",
-                self.severity,
-                self.file.to_string_lossy(),
-                self.line,
-                self.time,
-                self.component,
-                self.id,
-                self.message
-            ),
-        }
-    }
-}
+// impl fmt::Display for Line {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         match self.time_unit {
+//             Some(unit) => write!(
+//                 f,
+//                 "{} {}({}) @ {}{}: {} [{}] {}",
+//                 self.severity,
+//                 self.file.to_string_lossy(),
+//                 self.line,
+//                 self.time,
+//                 unit.to_string(),
+//                 self.component,
+//                 self.id,
+//                 self.message
+//             ),
+//             None => write!(
+//                 f,
+//                 "{} {}({}) @ {}: {} [{}] {}",
+//                 self.severity,
+//                 self.file.to_string_lossy(),
+//                 self.line,
+//                 self.time,
+//                 self.component,
+//                 self.id,
+//                 self.message
+//             ),
+//         }
+//     }
+// }
 
 #[derive(Debug, Clone)]
 pub struct Log {
