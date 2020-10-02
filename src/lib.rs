@@ -52,15 +52,16 @@ pub fn parse_filter_file(path: impl AsRef<Path>, ids: &Option<Vec<&str>>, sevs: 
 
     // let mut log = Log::new();
 
-    for (i, line) in buf_reader.lines().enumerate() {
+    for (_, line) in buf_reader.lines().enumerate() {
         let l = line.expect("line failed");
         let log_result = parser::parse_log_line(&l);
         match log_result {
             Ok((_, (severity_str, file_str, line_str, comp_str, id_str, msg_str))) => {
                 let log_line = match construct_log_line(severity_str, file_str, line_str, comp_str, id_str, msg_str) {
                     Ok(line) => line,
-                    Err(e) => {
-                        println!("line {} ignored due to error: {}", i, e.to_string());
+                    Err(_) => {
+                        // Ignore any errors
+                        // println!("line {} ignored due to error: {}", i, e.to_string());
                         continue;
                     },
                 };
@@ -70,7 +71,9 @@ pub fn parse_filter_file(path: impl AsRef<Path>, ids: &Option<Vec<&str>>, sevs: 
                 }
 
             },// Ignore parsing errors
-            Err(e) => println!("line {} ignored due to error: {}", i, e.to_string()),
+            Err(_) => {
+                // println!("line {} ignored due to error: {}", i, e.to_string());
+            },
         }
     }
 
